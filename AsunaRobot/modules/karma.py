@@ -4,7 +4,7 @@ from pyrogram import filters
 
 from AsunaRobot import OWNER_ID, pbot
 from AsunaRobot.utils.errors import capture_err
-from AsunaRobot.bot_plugins.dbfunctions import (    
+from AsunaRobot.bot_plugins.dbfunctions import (
     alpha_to_int,
     get_karma,
     get_karmas,
