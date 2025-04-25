@@ -1,6 +1,6 @@
 import threading
 
-from sqlalchemy import BigInteger, Boolean, Column, UnicodeText
+from sqlalchemy import Boolean, Column, BigInteger, UnicodeText
 
 from AsunaRobot.modules.sql import BASE, SESSION
 
