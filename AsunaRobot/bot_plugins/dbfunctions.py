@@ -1,5 +1,13 @@
 from typing import Dict, Union
 
+from motor.motor_asyncio import AsyncIOMotorClient as MongoCli
+
+from AsunaRobot import MONGO_DB_URI
+
+mongo = MongoCli(MONGO_DB_URI)
+db = mongo.AsunaRobot
+
+
 
 coupledb = db.couple
 karmadb = db.karma
