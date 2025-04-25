@@ -23,7 +23,7 @@ from AsunaRobot.modules.helper_funcs.extraction import extract_text
 from AsunaRobot.modules.helper_funcs.filters import CustomFilters
 from AsunaRobot.modules.helper_funcs.misc import build_keyboard_parser
 from AsunaRobot.modules.helper_funcs.msg_types import get_filter_type
-from SaitamaRobot.modules.helper_funcs.string_handling import (
+from AsunaRobot.modules.helper_funcs.string_handling import (
     split_quotes,
     button_markdown_parser,
     escape_invalid_curly_brackets,
