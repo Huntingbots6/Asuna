@@ -1,3 +1,5 @@
+# HuntingBots
+
 import asyncio
 import sys
 from motor import motor_asyncio
