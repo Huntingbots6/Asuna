@@ -14,9 +14,9 @@ class Config(object):
     # REQUIRED
     # Login to https://my.telegram.org and fill in these slots with the details given by it
 
-    API_ID = 123456  # integer value, dont use ""
-    API_HASH = "awoo"
-    TOKEN = "BOT_TOKEN"  # This var used to be API_KEY but it is now TOKEN, adjust accordingly.
+    API_ID = "3975570"  # integer value, dont use ""
+    API_HASH = "680b62f2844aa1954216f6cb99d2f3d9"
+    TOKEN = "1843295508:AAFW5BZHxlB9B72xVj-rraTBMFa7BOVd8b4"  # This var used to be API_KEY but it is now TOKEN, adjust accordingly.
     OWNER_ID = 1606221784  # If you dont know, run the bot and do /id in your private chat with it, also an integer
     OWNER_USERNAME = "The_Ghost_Hunter"
     SUPPORT_CHAT = "AsunaRobotSupport"  # Your own group for support, do not add the @
@@ -28,15 +28,39 @@ class Config(object):
     )  # Prints information like gbans, sudo promotes, AI enabled disable states that may help in debugging and shit
 
     # RECOMMENDED
-    SQLALCHEMY_DATABASE_URI = "something://somewhat:user@hosturl:port/databasename"  # needed for any database modules
-    LOAD = []
-    NO_LOAD = ["rss", "cleaner", "connection", "math"]
-    WEBHOOK = False
-    INFOPIC = True
-    URL = None
-    SPAMWATCH_API = ""  # go to support.spamwat.ch to get key
-    SPAMWATCH_SUPPORT_CHAT = "@SpamWatchSupport"
+    WEBHOOK = ""
+    URL = ""
+    PORT = ""
+    CERT_PATH = ""
+    
 
+    DATABASE_URL = "postgresql://tghbot_owner:npg_jae9mlh4kOMN@ep-shy-feather-a4hofch2-pooler.us-east-1.aws.neon.tech/tghbot?sslmode=require"
+    MONGO_DB_URI = "mongodb+srv://tghcloud:Hunter01@cluster0.mzhfx.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+    ARQ_API_KEY = "QVFHGP-ARXCNX-STOXKZ-DGMLRU-ARQ"
+    ARQ_API_URL = ""
+    DONATION_LINK = ""
+    LOAD = ""
+    TEMP_DOWNLOAD_DIRECTORY = ""
+    OPENWEATHERMAP_ID = ""
+    NO_LOAD = ""
+    HEROKU_API_KEY = ""
+    HEROKU_APP_NAME = ""
+    DEL_CMDS = ""
+    STRICT_GBAN = ""
+    WORKERS = ""
+    BAN_STICKER = ""
+    ALLOW_CHATS = ""
+    ALLOW_EXCL = ""
+    CASH_API_KEY = ""
+    TIME_API_KEY = ""
+    WALL_API = ""
+    SPAMWATCH_API = "4K~uuKGR_Ntet64M_cvsc4HoMvnq6sH821AfprRrGfF6aFQL2FbxRQN64CHkYY9L"  # go to support.spamwat.ch to get key
+    SPAMWATCH_SUPPORT_CHAT = "@SpamWatchSupport"
+    INFOPIC = "True"
+    LASTFM_API_KEY = ""
+    CF_API_KEY = ""
+
+    
     # OPTIONAL
     ##List of id's -  (not usernames) for users which have sudo access to the bot.
     DRAGONS = get_user_list("elevated_users.json", "sudos")
@@ -57,6 +81,7 @@ class Config(object):
     )
     BAN_STICKER = ""  # banhammer marie sticker id, the bot will send this sticker before banning or kicking a user in chat.
     ALLOW_EXCL = True  # Allow ! commands as well as / (Leave this to true so that blacklist can work)
+    ALLOW_CHATS = True
     CASH_API_KEY = (
         "awoo"  # Get your API key from https://www.alphavantage.co/support/#api-key
     )
@@ -67,7 +92,7 @@ class Config(object):
     AI_API_KEY = "awoo"  # For chatbot, get one from https://coffeehouse.intellivoid.net/dashboard
     BL_CHATS = []  # List of groups that you want blacklisted.
     SPAMMERS = None
-
+    
 
 class Production(Config):
     LOGGER = True
