@@ -100,8 +100,8 @@ if ENV:
     LASTFM_API_KEY = os.environ.get("LASTFM_API_KEY", None)
     CF_API_KEY = os.environ.get("CF_API_KEY", None)
     BOT_ID = int(os.environ.get("BOT_ID", None))
-    ARQ_API_URL = "https://thearq.tech"
-    ARQ_API_KEY = ARQ_API
+    ARQ_API_URL = os.environ.get("ARQ_API_URL")
+    ARQ_API_KEY = os.environ.get("ARQ_API_KEY")
 
     ALLOW_CHATS = os.environ.get("ALLOW_CHATS", True)
 
@@ -154,7 +154,7 @@ else:
 
     DB_URI = Config.DATABASE_URL
     MONGO_DB_URI = Config.MONGO_DB_URI
-    ARQ_API = Config.ARQ_API_KEY
+    ARQ_API_KEY = Config.ARQ_API_KEY
     ARQ_API_URL = Config.ARQ_API_URL
     DONATION_LINK = Config.DONATION_LINK
     LOAD = Config.LOAD
