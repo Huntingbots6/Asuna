@@ -1,5 +1,4 @@
-from AsunaRobot.mongo import db
-from typing import Dict, List, Union
+from typing import Dict, Union
 
 
 coupledb = db.couple
@@ -7,7 +6,6 @@ karmadb = db.karma
 
 
 # Couple Chooser
-
 
 async def _get_lovers(chat_id: int):
     lovers = await coupledb.find_one({"chat_id": chat_id})
@@ -34,6 +32,7 @@ async def save_couple(chat_id: int, date: str, couple: dict):
         {"$set": {"couple": lovers}},
         upsert=True,
     )
+
 
 # Karma functions
 
