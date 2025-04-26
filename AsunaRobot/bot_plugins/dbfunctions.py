@@ -34,8 +34,6 @@ async def save_couple(chat_id: int, date: str, couple: dict):
 
 # Karma functions
 
-
-async def get_karmas_count() -> dict:
 async def get_karmas_count() -> dict:
     chats_count = 0
     karmas_count = 0
@@ -99,7 +97,6 @@ async def karma_off(chat_id: int):
     if not is_karma:
         return
     return await karmadb.insert_one({"chat_id_toggle": chat_id})
-
 
 # Alpha integer
 
