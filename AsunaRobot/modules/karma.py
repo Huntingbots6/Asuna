@@ -1,4 +1,5 @@
 from AsunaRobot import pbot
+from AsunaRobot.bot_plugins.permissions import can_change_info
 from AsunaRobot.utils.errors import capture_err
 from AsunaRobot.bot_plugins.dbfunctions import (
     update_karma,
