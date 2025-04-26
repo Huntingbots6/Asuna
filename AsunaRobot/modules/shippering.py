@@ -1,4 +1,4 @@
-from AsunaRobot import pbot
+from AsunaRobot import pbot as app
 from AsunaRobot.utils.errors import capture_err
 from AsunaRobot.bot_plugins.dbfunctions import get_couple, save_couple
 from pyrogram import filters, enums
