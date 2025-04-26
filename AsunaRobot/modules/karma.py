@@ -22,9 +22,10 @@ regex_downvote = r"^(\-|\-\-|\-1|👎)$"
 
 @pbot.on_message(
     filters.text
+    & filters.group
     & filters.incoming
     & filters.reply
-    & filters.regex(regex_upvote)
+    & filters.regex(regex_upvote, re.IGNORECASE)
     & ~filters.via_bot
     & ~filters.bot,
     group=karma_positive_group,
