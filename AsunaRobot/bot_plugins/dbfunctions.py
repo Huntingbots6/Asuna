@@ -36,6 +36,7 @@ async def save_couple(chat_id: int, date: str, couple: dict):
 
 
 async def get_karmas_count() -> dict:
+async def get_karmas_count() -> dict:
     chats_count = 0
     karmas_count = 0
     async for chat in karmadb.find({"chat_id": {"$lt": 0}}):
