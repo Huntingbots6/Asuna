@@ -25,7 +25,7 @@ regex_downvote = r"^(\-|\-\-|\-1|👎)$"
     & filters.group
     & filters.incoming
     & filters.reply
-    & filters.regex(regex_upvote, re.IGNORECASE)
+    & filters.regex(regex_upvote)
     & ~filters.via_bot
     & ~filters.bot,
     group=karma_positive_group,
