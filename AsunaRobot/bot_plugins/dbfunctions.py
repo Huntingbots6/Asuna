@@ -77,8 +77,9 @@ async def update_karma(chat_id: int, name: str, karma: dict):
     name = name.lower().strip()
     karmas = await get_karmas(chat_id)
     karmas[name] = karma
-    karmadb.update_one({"chat_id": chat_id}, {"$set": {"karma": karmas}}, upsert=True)
-
+    await karmadb.update_one(
+        {"chat_id": chat_id}, {"$set": {"karma": karmas}}, upsert=True
+    )
 
 async def is_karma_on(chat_id: int) -> bool:
     chat = karmadb.find_one({"chat_id_toggle": chat_id})
