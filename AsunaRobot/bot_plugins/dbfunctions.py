@@ -1,4 +1,4 @@
-from AsunaRobot.mongo import db
+# from AsunaRobot.mongo import db
 from AsunaRobot import MONGO_DB_URI
 from typing import Dict, List, Union
 
