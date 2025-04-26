@@ -149,7 +149,7 @@ async def karma(_, message):
 
 
 @pbot.on_message(filters.command("karma") & ~filters.private)
-@can_change_info
+@capture_err
 async def captcha_state(_, message):
     usage = "**Usage:**\n/karma [ON|OFF]"
     if len(message.command) != 2:
