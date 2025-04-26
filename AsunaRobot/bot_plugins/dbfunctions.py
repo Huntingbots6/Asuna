@@ -38,30 +38,24 @@ async def save_couple(chat_id: int, date: str, couple: dict):
 
 
 async def get_karmas_count() -> dict:
-    chats = karmadb.find({"chat_id": {"$lt": 0}})
-    if not chats:
-        return {}
     chats_count = 0
     karmas_count = 0
-    for chat in await chats.to_list(length=1000000):
+    async for chat in karmadb.find({"chat_id": {"$lt": 0}}):
         for i in chat["karma"]:
-            karmas_count += chat["karma"][i]["karma"]
+            karma_ = chat["karma"][i]["karma"]
+            if karma_ > 0:
+                karmas_count += karma_
         chats_count += 1
     return {"chats_count": chats_count, "karmas_count": karmas_count}
 
 
 async def user_global_karma(user_id) -> int:
-    chats = karmadb.find({"chat_id": {"$lt": 0}})
-    if not chats:
-        return 0
     total_karma = 0
-    for chat in await chats.to_list(length=1000000):
+    async for chat in karmadb.find({"chat_id": {"$lt": 0}}):
         karma = await get_karma(chat["chat_id"], await int_to_alpha(user_id))
-        if karma:
-            if int(karma["karma"]) > 0:
-                total_karma += int(karma["karma"])
+        if karma and (int(karma["karma"]) > 0):
+            total_karma += int(karma["karma"])
     return total_karma
-
 
 async def get_karmas(chat_id: int) -> Dict[str, int]:
     karma = karmadb.find_one({"chat_id": chat_id})
