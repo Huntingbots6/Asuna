@@ -36,6 +36,7 @@ class Config(object):
 
     DATABASE_URL = "postgresql://tghbot_owner:npg_jae9mlh4kOMN@ep-shy-feather-a4hofch2-pooler.us-east-1.aws.neon.tech/tghbot?sslmode=require"
     MONGO_PORT = "27017"
+    MONGO_DB = "AsunaRobot"
     MONGO_DB_URI = "mongodb+srv://huntingbots:huntingbots00@cluster0.8w0fe.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
     ARQ_API_KEY = "QVFHGP-ARXCNX-STOXKZ-DGMLRU-ARQ"
     ARQ_API_URL = "https://thearq.tech"
