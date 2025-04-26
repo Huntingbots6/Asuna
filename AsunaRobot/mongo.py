@@ -4,6 +4,7 @@ import sys
 
 from motor import motor_asyncio
 from AsunaRobot import MONGO_DB_URI 
+from AsunaRobot import MONGO_PORT
 from pymongo import MongoClient
 from pymongo.errors import ServerSelectionTimeoutError
 
