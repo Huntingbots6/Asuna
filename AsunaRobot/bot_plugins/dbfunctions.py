@@ -7,13 +7,9 @@ from AsunaRobot import MONGO_DB_URI
 mongo = MongoCli(MONGO_DB_URI)
 db = mongo.AsunaRobot
 
-
-
 coupledb = db.couple
 karmadb = db.karma
 
-
-# Couple Chooser
 
 async def _get_lovers(chat_id: int):
     lovers = await coupledb.find_one({"chat_id": chat_id})
@@ -40,9 +36,6 @@ async def save_couple(chat_id: int, date: str, couple: dict):
         {"$set": {"couple": lovers}},
         upsert=True,
     )
-
-
-# Karma functions
 
 
 async def get_karmas_count() -> dict:
@@ -108,9 +101,6 @@ async def karma_off(chat_id: int):
     if not is_karma:
         return
     return await karmadb.insert_one({"chat_id_toggle": chat_id})
-
-
-# Alpha integer
 
 
 async def int_to_alpha(user_id: int) -> str:
