@@ -3,6 +3,7 @@ import asyncio
 from pyrogram import filters
 
 from AsunaRobot import OWNER_ID, pbot
+from AsunaRobot.utils.admins import can_change_info
 from AsunaRobot.utils.errors import capture_err
 from AsunaRobot.bot_plugins.dbfunctions import (
     alpha_to_int,
@@ -149,7 +150,7 @@ async def karma(_, message):
 
 
 @pbot.on_message(filters.command("karma") & ~filters.private)
-@capture_err
+@can_change_info
 async def captcha_state(_, message):
     usage = "**Usage:**\n/karma [ON|OFF]"
     if len(message.command) != 2:
