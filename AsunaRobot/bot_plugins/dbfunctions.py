@@ -102,7 +102,6 @@ async def karma_off(chat_id: int):
 
 # Alpha integer
 
-
 async def int_to_alpha(user_id: int) -> str:
     alphabet = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]
     text = ""
@@ -123,7 +122,6 @@ async def alpha_to_int(user_id_alphabet: str) -> int:
 
 
 """NSFW System"""
-
 
 async def is_nsfw_on(chat_id: int) -> bool:
     chat = nsfwdb.find_one({"chat_id": chat_id})
