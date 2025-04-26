@@ -1,4 +1,4 @@
-# HuntingBots
+# Made For AsunaRobot
 
 import asyncio
 import sys
@@ -6,9 +6,6 @@ from motor import motor_asyncio
 from pymongo import MongoClient
 from pymongo.errors import ServerSelectionTimeoutError
 
-
-# MongoDB client
-log.info("Initializing MongoDB client")
 client = MongoClient("mongodb+srv://huntingbots:huntingbots00@cluster0.8w0fe.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 , 27017)["AsunaRobot"]
 motor = motor_asyncio.AsyncIOMotorClient("mongodb+srv://huntingbots:huntingbots00@cluster0.8w0fe.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
