@@ -1,15 +1,18 @@
+import asyncio
 from AsunaRobot import pbot
+from pyrogram import filters 
 from AsunaRobot.bot_plugins.permissions import can_change_info
 from AsunaRobot.utils.errors import capture_err
 from AsunaRobot.bot_plugins.dbfunctions import (
-    update_karma,
+    alpha_to_int,
     get_karma,
     get_karmas,
     int_to_alpha,
-    alpha_to_int,
+    is_karma_on,
+    karma_off,
+    karma_on,
+    update_karma,
 )
-from AsunaRobot.utils.filter_groups import karma_positive_group, karma_negative_group
-from pyrogram import filters
 
 
 regex_upvote = r"^((?i)\+|\+\+|\+1|thx|tnx|ty|thank you|thanx|thanks|pro|cool|good|👍)$"
