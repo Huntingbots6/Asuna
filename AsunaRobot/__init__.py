@@ -76,9 +76,7 @@ if ENV:
     API_ID = os.environ.get("API_ID", None)
     API_HASH = os.environ.get("API_HASH", None)
     DB_URI = os.environ.get("DATABASE_URL")
-    MONGO_DB = os.environ.get("MONGO_DB", None)
     MONGO_DB_URI = os.environ.get("MONGO_DB_URI", None)
-    MONGO_PORT = int(os.environ.get("MONGO_PORT", None))
     ARQ_API = os.environ.get("ARQ_API", None)
     DONATION_LINK = os.environ.get("DONATION_LINK")
     LOAD = os.environ.get("LOAD", "").split()
@@ -156,8 +154,6 @@ else:
 
     DB_URI = Config.DATABASE_URL
     MONGO_DB_URI = Config.MONGO_DB_URI
-    MONGO_DB = Config.MONGO_DB
-    MONGO_PORT = Config.MONGO_PORT
     ARQ_API_KEY = Config.ARQ_API_KEY
     ARQ_API_URL = Config.ARQ_API_URL
     DONATION_LINK = Config.DONATION_LINK
