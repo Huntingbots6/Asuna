@@ -20,14 +20,19 @@ regex_downvote = r"^(\-|\-\-|\-1|👎)$"
     & filters.group
     & filters.incoming
     & filters.reply
-    & filters.regex(regex_upvote)
+    & filters.regex(regex_upvote, re.IGNORECASE)
     & ~filters.via_bot
-    & ~filters.bot
-    & ~filters.edited,
+    & ~filters.bot,
     group=karma_positive_group,
 )
 @capture_err
 async def upvote(_, message):
+    if not await is_karma_on(message.chat.id):
+        return
+    if not message.reply_to_message.from_user:
+        return
+    if not message.from_user:
+        return
     if message.reply_to_message.from_user.id == message.from_user.id:
         return
     chat_id = message.chat.id
@@ -53,17 +58,35 @@ async def upvote(_, message):
     & filters.group
     & filters.incoming
     & filters.reply
-    & filters.regex(regex_downvote)
+    & filters.regex(regex_downvote, re.IGNORECASE)
     & ~filters.via_bot
-    & ~filters.bot
-    & ~filters.edited,
+    & ~filters.bot,
     group=karma_negative_group,
 )
 @capture_err
 async def downvote(_, message):
+    if not await is_karma_on(message.chat.id):
+        return
+    if not message.reply_to_message.from_user:
+        return
+    if not message.from_user:
+        return
     if message.reply_to_message.from_user.id == message.from_user.id:
         return
+
     chat_id = message.chat.id
+    user_id = message.from_user.id
+    current_karma = await get_karma(chat_id, await int_to_alpha(user_id))
+    if current_karma:
+        current_karma = current_karma["karma"]
+        karma = current_karma - 1
+        new_karma = {"karma": karma}
+        await update_karma(chat_id, await int_to_alpha(user_id), new_karma)
+    else:
+        karma = 1
+        new_karma = {"karma": karma}
+        await update_karma(chat_id, await int_to_alpha(user_id), new_karma)
+
     user_id = message.reply_to_message.from_user.id
     user_mention = message.reply_to_message.from_user.mention
     current_karma = await get_karma(chat_id, await int_to_alpha(user_id))
@@ -77,9 +100,8 @@ async def downvote(_, message):
         new_karma = {"karma": karma}
         await update_karma(chat_id, await int_to_alpha(user_id), new_karma)
     await message.reply_text(
-        f"Decremented Karma Of {user_mention} By 1 \nTotal Points: {karma}"
+        f"Decremented Karma of {user_mention} By 1 \nTotal Points: {karma}"
     )
-
 
 @app.on_message(filters.command("karma") & filters.group)
 @capture_err
