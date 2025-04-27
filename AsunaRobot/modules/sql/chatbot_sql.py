@@ -1,5 +1,6 @@
-import threading
+# this module is created by HuntingBots on Github for AsunaRobot on Telegram
 
+import threading
 from sqlalchemy import Column, String
 from AsunaRobot.modules.sql import BASE, SESSION
 
@@ -24,6 +25,7 @@ def is_openai_enabled(chat_id):
     finally:
         SESSION.close()
 
+
 def enable_openai(chat_id):
     """
     Enable OpenAI Chatbot for a specific chat.
@@ -35,6 +37,7 @@ def enable_openai(chat_id):
         SESSION.add(chat)
         SESSION.commit()
 
+
 def disable_openai(chat_id):
     """
     Disable OpenAI Chatbot for a specific chat.
@@ -44,6 +47,7 @@ def disable_openai(chat_id):
         if chat:
             SESSION.delete(chat)
         SESSION.commit()
+
 
 def get_all_openai_chats():
     """
