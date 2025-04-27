@@ -19,15 +19,15 @@ def chatbot_enable(update: Update, context: CallbackContext) -> str:
     user = update.effective_user
     chat = update.effective_chat
 
-    sql.set_kuki(chat.id)  # Calls set_kuki, which is aliased to enable_openai
+    sql.enable_openai(chat.id)  # Updated to use enable_openai
     query.answer()
     query.edit_message_text(
         f"<b>{html.escape(chat.title)}:</b>\n"
-        f"AI Chatbot Enabled\n"
+        f"OpenAI Chatbot Enabled\n"
         f"<b>Admin:</b> {mention_html(user.id, html.escape(user.first_name))}",
         parse_mode=ParseMode.HTML,
     )
-    return f"AI Chatbot Enabled in {chat.title} by {user.first_name}"
+    return f"OpenAI Chatbot Enabled in {chat.title} by {user.first_name}"
 
 @user_admin_no_reply
 @loggable
@@ -36,22 +36,22 @@ def chatbot_disable(update: Update, context: CallbackContext) -> str:
     user = update.effective_user
     chat = update.effective_chat
 
-    sql.disable_openai(chat.id)  # Calls disable_openai directly
+    sql.disable_openai(chat.id)  # Updated to use disable_openai
     query.answer()
     query.edit_message_text(
         f"<b>{html.escape(chat.title)}:</b>\n"
-        f"AI Chatbot Disabled\n"
+        f"OpenAI Chatbot Disabled\n"
         f"<b>Admin:</b> {mention_html(user.id, html.escape(user.first_name))}",
         parse_mode=ParseMode.HTML,
     )
-    return f"AI Chatbot Disabled in {chat.title} by {user.first_name}"
+    return f"OpenAI Chatbot Disabled in {chat.title} by {user.first_name}"
 
 def chatbot_reply(update: Update, context: CallbackContext):
     message = update.effective_message
     chat_id = update.effective_chat.id
     bot = context.bot
 
-    if not sql.is_kuki(chat_id):  # Calls is_kuki, which is aliased to is_openai_enabled
+    if not sql.is_openai_enabled(chat_id):  # Updated to use is_openai_enabled
         return
 
     if message.text and not message.document:
@@ -86,8 +86,8 @@ def chatbot_control_panel(update: Update, context: CallbackContext):
     )
 
 def list_all_chats(update: Update, context: CallbackContext):
-    chats = sql.get_all_openai_chats()
-    text = "<b>AI Chatbot Enabled Chats:</b>\n"
+    chats = sql.get_all_openai_chats()  # Updated to use get_all_openai_chats
+    text = "<b>OpenAI Chatbot Enabled Chats:</b>\n"
     for chat in chats:
         try:
             chat_obj = context.bot.get_chat(int(chat.chat_id))
@@ -103,7 +103,7 @@ __help__ = """
 • `/chatbot` - Shows chatbot control panel
 """
 
-__mod_name__ = "AI ChatBot"
+__mod_name__ = "OpenAI ChatBot"
 
 CHATBOT_CONTROL_HANDLER = CommandHandler("chatbot", chatbot_control_panel, run_async=True)
 CHATBOT_ENABLE_HANDLER = CallbackQueryHandler(chatbot_enable, pattern=r"add_chat", run_async=True)
@@ -123,4 +123,4 @@ __handlers__ = [
     CHATBOT_DISABLE_HANDLER,
     LIST_ALL_CHATS_HANDLER,
     CHATBOT_REPLY_HANDLER,
-]
+    ]
