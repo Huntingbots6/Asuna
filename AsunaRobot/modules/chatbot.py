@@ -16,7 +16,7 @@ from AsunaRobot.modules.helper_funcs.chat_status import user_admin, user_admin_n
 from AsunaRobot import dispatcher, SUPPORT_CHAT
 from AsunaRobot.modules.log_channel import loggable
 import AsunaRobot.modules.sql.chatbot_sql as sql
-from AsunaRobot import OpenAI
+from AsunaRobot import openai
 
 
 @user_admin_no_reply
