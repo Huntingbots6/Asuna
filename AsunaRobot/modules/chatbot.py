@@ -108,19 +108,22 @@ __mod_name__ = "OpenAI ChatBot"
 CHATBOT_CONTROL_HANDLER = CommandHandler("chatbot", chatbot_control_panel, run_async=True)
 CHATBOT_ENABLE_HANDLER = CallbackQueryHandler(chatbot_enable, pattern=r"add_chat", run_async=True)
 CHATBOT_DISABLE_HANDLER = CallbackQueryHandler(chatbot_disable, pattern=r"rm_chat", run_async=True)
-CHATBOT_REPLY_HANDLER = MessageHandler(Filters.text & ~Filters.command, chatbot_reply, run_async=True)
-LIST_ALL_CHATS_HANDLER = CommandHandler("allchats", list_all_chats, run_async=True)
+CHATBOT_REPLY_HANDLER = MessageHandler(
+    Filters.text & (~Filters.regex(r"^#[^\s]+") & ~Filters.regex(r"^!")
+                    & ~Filters.regex(r"^\/")), chatbot_reply, run_async=True)
+LIST_ALL_CHATS_HANDLER = CommandHandler(
+    "allchats", list_all_chats, filters=CustomFilters.dev_filter, run_async=True)
 
-dispatcher.add_handler(CHATBOT_CONTROL_HANDLER)
 dispatcher.add_handler(CHATBOT_ENABLE_HANDLER)
+dispatcher.add_handler(CHATBOT_CONTROL_HANDLER)
 dispatcher.add_handler(CHATBOT_DISABLE_HANDLER)
 dispatcher.add_handler(LIST_ALL_CHATS_HANDLER)
 dispatcher.add_handler(CHATBOT_REPLY_HANDLER)
 
 __handlers__ = [
-    CHATBOT_CONTROL_HANDLER,
     CHATBOT_ENABLE_HANDLER,
+    CHATBOT_CONTROL_HANDLER,
     CHATBOT_DISABLE_HANDLER,
     LIST_ALL_CHATS_HANDLER,
     CHATBOT_REPLY_HANDLER,
-    ]
+]
