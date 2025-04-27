@@ -84,3 +84,4 @@ carbonnow
 lyricsgenius
 pyromod
 uvloop
+openai
