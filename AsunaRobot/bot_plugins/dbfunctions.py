@@ -1,6 +1,12 @@
-from AsunaRobot.mongo import db
+from typing import Dict, Union
+
+from motor.motor_asyncio import AsyncIOMotorClient as MongoCli
+
 from AsunaRobot import MONGO_DB_URI
-from typing import Dict, List, Union
+
+mongo = MongoCli(MONGO_DB_URI)
+db = mongo.AsunaRobot
+
 
 coupledb = db.couple
 karmadb = db.karma
@@ -57,13 +63,12 @@ async def user_global_karma(user_id) -> int:
             total_karma += int(karma["karma"])
     return total_karma
 
+
 async def get_karmas(chat_id: int) -> Dict[str, int]:
-    karma = karmadb.find_one({"chat_id": chat_id})
-    if karma:
-        karma = karma["karma"]
-    else:
-        karma = {}
-    return karma
+    karma = await karmadb.find_one({"chat_id": chat_id})
+    if not karma:
+        return {}
+    return karma["karma"]
 
 
 async def get_karma(chat_id: int, name: str) -> Union[bool, dict]:
@@ -75,14 +80,15 @@ async def get_karma(chat_id: int, name: str) -> Union[bool, dict]:
 
 async def update_karma(chat_id: int, name: str, karma: dict):
     name = name.lower().strip()
-    karmas =  get_karmas(chat_id)
+    karmas = await get_karmas(chat_id)
     karmas[name] = karma
     await karmadb.update_one(
         {"chat_id": chat_id}, {"$set": {"karma": karmas}}, upsert=True
     )
 
+
 async def is_karma_on(chat_id: int) -> bool:
-    chat = karmadb.find_one({"chat_id_toggle": chat_id})
+    chat = await karmadb.find_one({"chat_id_toggle": chat_id})
     if not chat:
         return True
     return False
@@ -92,15 +98,14 @@ async def karma_on(chat_id: int):
     is_karma = await is_karma_on(chat_id)
     if is_karma:
         return
-    return  karmadb.delete_one({"chat_id_toggle": chat_id})
+    return await karmadb.delete_one({"chat_id_toggle": chat_id})
 
 
 async def karma_off(chat_id: int):
     is_karma = await is_karma_on(chat_id)
     if not is_karma:
         return
-    return  karmadb.insert_one({"chat_id_toggle": chat_id})
-
+    return await karmadb.insert_one({"chat_id_toggle": chat_id})
 
 # Alpha integer
 
