@@ -2,16 +2,24 @@
 
 import json
 import re
+import os
 import html
+import requests
+import AsunaRobot.modules.sql.chatbot_sql as sql
+
 from time import sleep
-from telegram import ParseMode, InlineKeyboardButton, InlineKeyboardMarkup, Chat, User, Update
-from telegram.ext import CallbackContext, CallbackQueryHandler, CommandHandler, MessageHandler, Filters
-from telegram.utils.helpers import mention_html  
+from telegram import ParseMode
+from telegram import (CallbackQuery, Chat, MessageEntity, InlineKeyboardButton,
+                      InlineKeyboardMarkup, Message, ParseMode, Update, Bot, User)
+from telegram.ext import (CallbackContext, CallbackQueryHandler, CommandHandler,
+                          DispatcherHandlerStop, Filters, MessageHandler)                         
+from telegram.error import BadRequest, RetryAfter, Unauthorized
+from telegram.utils.helpers import mention_html, mention_markdown, escape_markdown
+
 from AsunaRobot.modules.helper_funcs.filters import CustomFilters
 from AsunaRobot.modules.helper_funcs.chat_status import user_admin, user_admin_no_reply
+from AsunaRobot import dispatcher, updater, SUPPORT_CHAT
 from AsunaRobot.modules.log_channel import loggable
-import AsunaRobot.modules.sql.chatbot_sql as sql
-from AsunaRobot import openai_client
 
 @user_admin_no_reply
 @loggable
