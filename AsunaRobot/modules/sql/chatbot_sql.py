@@ -3,42 +3,53 @@ import threading
 from sqlalchemy import Column, String
 from AsunaRobot.modules.sql import BASE, SESSION
 
-class KukiChats(BASE):
-    __tablename__ = "kuki_chats"
+class OpenAIChats(BASE):
+    __tablename__ = "openai_chats"
     chat_id = Column(String(14), primary_key=True)
 
     def __init__(self, chat_id):
         self.chat_id = chat_id
 
-KukiChats.__table__.create(checkfirst=True)
+OpenAIChats.__table__.create(checkfirst=True)
 INSERTION_LOCK = threading.RLock()
 
 
-def is_kuki(chat_id):
+def is_openai_enabled(chat_id):
+    """
+    Check if OpenAI Chatbot is enabled for a specific chat.
+    """
     try:
-        chat = SESSION.query(KukiChats).get(str(chat_id))
+        chat = SESSION.query(OpenAIChats).get(str(chat_id))
         return bool(chat)
     finally:
         SESSION.close()
 
-def set_kuki(chat_id):
+def enable_openai(chat_id):
+    """
+    Enable OpenAI Chatbot for a specific chat.
+    """
     with INSERTION_LOCK:
-        kukichat = SESSION.query(KukiChats).get(str(chat_id))
-        if not kukichat:
-            kukichat = KukiChats(str(chat_id))
-        SESSION.add(kukichat)
+        chat = SESSION.query(OpenAIChats).get(str(chat_id))
+        if not chat:
+            chat = OpenAIChats(str(chat_id))
+        SESSION.add(chat)
         SESSION.commit()
 
-def rem_kuki(chat_id):
+def disable_openai(chat_id):
+    """
+    Disable OpenAI Chatbot for a specific chat.
+    """
     with INSERTION_LOCK:
-        kukichat = SESSION.query(KukiChats).get(str(chat_id))
-        if kukichat:
-            SESSION.delete(kukichat)
+        chat = SESSION.query(OpenAIChats).get(str(chat_id))
+        if chat:
+            SESSION.delete(chat)
         SESSION.commit()
 
-
-def get_all_kuki_chats():
+def get_all_openai_chats():
+    """
+    Retrieve all chats where OpenAI Chatbot is enabled.
+    """
     try:
-        return SESSION.query(KukiChats.chat_id).all()
+        return SESSION.query(OpenAIChats.chat_id).all()
     finally:
         SESSION.close()
