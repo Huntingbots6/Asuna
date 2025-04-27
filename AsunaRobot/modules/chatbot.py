@@ -20,6 +20,7 @@ from AsunaRobot.modules.helper_funcs.filters import CustomFilters
 from AsunaRobot.modules.helper_funcs.chat_status import user_admin, user_admin_no_reply
 from AsunaRobot import dispatcher, updater, SUPPORT_CHAT
 from AsunaRobot.modules.log_channel import loggable
+from AsunaRobot import openai_client
 
 @user_admin_no_reply
 @loggable
