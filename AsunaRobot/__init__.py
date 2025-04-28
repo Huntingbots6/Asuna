@@ -98,7 +98,7 @@ if ENV:
     SPAMWATCH_SUPPORT_CHAT = os.environ.get("SPAMWATCH_SUPPORT_CHAT", None)
     SPAMWATCH_API = os.environ.get("SPAMWATCH_API", None)
     LASTFM_API_KEY = os.environ.get("LASTFM_API_KEY", None)
-    OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", None)
+    GROQ_API_KEY = os.environ.get("GROQ_API_KEY", None)
     CF_API_KEY = os.environ.get("CF_API_KEY", None)
     BOT_ID = int(os.environ.get("BOT_ID", None))
     ARQ_API_URL = os.environ.get("ARQ_API_URL")
@@ -176,7 +176,7 @@ else:
     SPAMWATCH_SUPPORT_CHAT = Config.SPAMWATCH_SUPPORT_CHAT
     SPAMWATCH_API = Config.SPAMWATCH_API
     INFOPIC = Config.INFOPIC
-    OPENAI_API_KEY = Config.OPENAI_API_KEY
+    GROQ_API_KEY = Config.GROQ_API_KEY
     LASTFM_API_KEY = Config.LASTFM_API_KEY
     CF_API_KEY = Config.CF_API_KEY
 
