@@ -26,7 +26,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Upda
 from telegram.ext import CallbackContext, CallbackQueryHandler, CommandHandler, MessageHandler, Filters
 from AsunaRobot import dispatcher, openai_client, LOGGER
 from AsunaRobot.modules.sql.chatbot_sql import is_openai_enabled, enable_openai, disable_openai, get_all_openai_chats
-from AsunaRobot.modules.helper_funcs.decorators import asuna_admin
+from AsunaRobot.modules.helper_funcs.chat_status import user_admin, user_admin_no_reply 
 
 __mod_name__ = "ChatBot"
 __help__ = """
