@@ -25,7 +25,7 @@ SOFTWARE.
 import requests
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update
 from telegram.ext import CallbackContext, CallbackQueryHandler, CommandHandler, MessageHandler, Filters
-from AsunaRobot import dispatcher, LOGGER
+from AsunaRobot import GROQ_API_KEY, dispatcher, LOGGER
 from AsunaRobot.modules.sql.chatbot_sql import is_openai_enabled, enable_openai, disable_openai, get_all_openai_chats
 from AsunaRobot.modules.helper_funcs.chat_status import user_admin, user_admin_no_reply 
 
@@ -39,7 +39,7 @@ Admins Only:
 
 # Groq API Configuration
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_API_KEY = Config.GROQ_API_KEY
+
 HEADERS = {
     "Content-Type": "application/json",
     "Authorization": f"Bearer {GROQ_API_KEY}",
