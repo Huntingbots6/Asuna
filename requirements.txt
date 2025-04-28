@@ -46,7 +46,8 @@ pydictionary==2.0.1
 tgcrypto==1.2.5
 pyrogram==2.0.106
 git+https://github.com/Sorrybabe/downloader
-yt_dlp
+yt_dlp 
+youtube_dl
 youtube_search
 youtube_search_python==1.4.6
 lyrics_extractor
