@@ -39,7 +39,7 @@ Admins Only:
 
 # Groq API Configuration
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_API_KEY = "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"
+GROQ_API_KEY = Config.GROQ_API_KEY
 HEADERS = {
     "Content-Type": "application/json",
     "Authorization": f"Bearer {GROQ_API_KEY}",
