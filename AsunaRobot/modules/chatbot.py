@@ -1,7 +1,7 @@
 """
 MIT License
 
-Copyright (c) 2025 HuntingBots 
+Copyright (c) 2025 HuntingBots
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,11 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update
 from telegram.ext import CallbackContext, CallbackQueryHandler, CommandHandler, MessageHandler, Filters
-from AsunaRobot import dispatcher, LOGGER
+from AsunaRobot import dispatcher, openai_client, LOGGER
 from AsunaRobot.modules.sql.chatbot_sql import is_openai_enabled, enable_openai, disable_openai, get_all_openai_chats
-from AsunaRobot.modules.helper_funcs.chat_status import user_admin, user_admin_no_reply 
+from AsunaRobot.modules.helper_funcs.decorators import asuna_admin
 
 __mod_name__ = "ChatBot"
 __help__ = """
@@ -97,12 +97,13 @@ def chatbot_reply(update: Update, context: CallbackContext):
         return
 
     try:
-        # Use AsunaAI to generate a response (Replace OpenAI with AsunaAI)
-        response = context.bot.send_message(
-            chat_id=chat_id,
-            text=f"AsunaAI Response to: {user_message}",
+        # Use OpenAI API to generate a response
+        response = openai_client.ChatCompletion.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": user_message}]
         )
-        update.message.reply_text(response.text)
+        bot_reply = response.choices[0].message["content"]
+        update.message.reply_text(bot_reply)
     except Exception as e:
         LOGGER.error(f"Error in ChatBot reply: {e}")
         update.message.reply_text("Failed to generate a response. Please try again later.")
