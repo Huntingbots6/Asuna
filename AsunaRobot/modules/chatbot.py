@@ -22,9 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import requests
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update
 from telegram.ext import CallbackContext, CallbackQueryHandler, CommandHandler, MessageHandler, Filters
-from AsunaRobot import dispatcher, openai_client, LOGGER
+from AsunaRobot import dispatcher, LOGGER
 from AsunaRobot.modules.sql.chatbot_sql import is_openai_enabled, enable_openai, disable_openai, get_all_openai_chats
 from AsunaRobot.modules.helper_funcs.chat_status import user_admin, user_admin_no_reply 
 
@@ -35,6 +36,14 @@ Admins Only:
 • /addchat - Enable chatbot in the current chat
 • /rmchat - Disable chatbot in the current chat
 """
+
+# Groq API Configuration
+GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
+GROQ_API_KEY = "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"
+HEADERS = {
+    "Content-Type": "application/json",
+    "Authorization": f"Bearer {GROQ_API_KEY}",
+}
 
 # Enable chatbot for a specific chat
 @user_admin
@@ -97,12 +106,17 @@ def chatbot_reply(update: Update, context: CallbackContext):
         return
 
     try:
-        # Use OpenAI API to generate a response
-        response = openai_client.ChatCompletion.create(
-            model="gpt-4",
-            messages=[{"role": "user", "content": user_message}]
-        )
-        bot_reply = response.choices[0].message["content"]
+        # Use Groq API to generate a response
+        payload = {
+            "model": "meta-llama/llama-4-scout-17b-16e-instruct",
+            "messages": [{"role": "user", "content": user_message}],
+        }
+        response = requests.post(GROQ_API_URL, headers=HEADERS, json=payload)
+        response.raise_for_status()  # Raise an error for HTTP codes 4xx/5xx
+        data = response.json()
+
+        # Extract the bot's reply
+        bot_reply = data.get("choices", [])[0].get("message", {}).get("content", "I couldn't generate a response.")
         update.message.reply_text(bot_reply)
     except Exception as e:
         LOGGER.error(f"Error in ChatBot reply: {e}")
