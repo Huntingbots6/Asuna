@@ -57,7 +57,7 @@ def disable_chatbot(update: Update, context: CallbackContext):
     update.message.reply_text("ChatBot has been disabled in this chat!")
 
 # Chatbot control panel
-@user_admin
+@user_admin_no_reply
 def chatbot_panel(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
     keyboard = [
