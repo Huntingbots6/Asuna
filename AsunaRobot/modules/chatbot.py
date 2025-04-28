@@ -1,139 +1,138 @@
-# this module is created by HuntingBots on Github for AsunaRobot on Telegram
+"""
+MIT License
 
-import json
-import re
-import os
-import html
-import requests
-import AsunaRobot.modules.sql.chatbot_sql as sql
+Copyright (c) 2025 HuntingBots
 
-from time import sleep
-from telegram import ParseMode
-from telegram import (CallbackQuery, Chat, MessageEntity, InlineKeyboardButton,
-                      InlineKeyboardMarkup, Message, ParseMode, Update, Bot, User)
-from telegram.ext import (CallbackContext, CallbackQueryHandler, CommandHandler,
-                          DispatcherHandlerStop, Filters, MessageHandler)                         
-from telegram.error import BadRequest, RetryAfter, Unauthorized
-from telegram.utils.helpers import mention_html, mention_markdown, escape_markdown
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-from AsunaRobot.modules.helper_funcs.filters import CustomFilters
-from AsunaRobot.modules.helper_funcs.chat_status import user_admin, user_admin_no_reply
-from AsunaRobot import dispatcher, updater, SUPPORT_CHAT
-from AsunaRobot.modules.log_channel import loggable
-from AsunaRobot import openai_client
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-@user_admin_no_reply
-@loggable
-def chatbot_enable(update: Update, context: CallbackContext) -> str:
-    query = update.callback_query
-    user = update.effective_user
-    chat = update.effective_chat
-
-    sql.enable_openai(chat.id)  # Updated to use enable_openai
-    query.answer()
-    query.edit_message_text(
-        f"<b>{html.escape(chat.title)}:</b>\n"
-        f"OpenAI Chatbot Enabled\n"
-        f"<b>Admin:</b> {mention_html(user.id, html.escape(user.first_name))}",
-        parse_mode=ParseMode.HTML,
-    )
-    return f"OpenAI Chatbot Enabled in {chat.title} by {user.first_name}"
-
-@user_admin_no_reply
-@loggable
-def chatbot_disable(update: Update, context: CallbackContext) -> str:
-    query = update.callback_query
-    user = update.effective_user
-    chat = update.effective_chat
-
-    sql.disable_openai(chat.id)  # Updated to use disable_openai
-    query.answer()
-    query.edit_message_text(
-        f"<b>{html.escape(chat.title)}:</b>\n"
-        f"OpenAI Chatbot Disabled\n"
-        f"<b>Admin:</b> {mention_html(user.id, html.escape(user.first_name))}",
-        parse_mode=ParseMode.HTML,
-    )
-    return f"OpenAI Chatbot Disabled in {chat.title} by {user.first_name}"
-
-def chatbot_reply(update: Update, context: CallbackContext):
-    message = update.effective_message
-    chat_id = update.effective_chat.id
-    bot = context.bot
-
-    if not sql.is_openai_enabled(chat_id):  # Updated to use is_openai_enabled
-        return
-
-    if message.text and not message.document:
-        user_message = message.text
-        bot.send_chat_action(chat_id, action="typing")
-
-        try:
-            # Use OpenAI API to get chatbot response
-            completion = openai_client.ChatCompletion.create(
-                model="gpt-4",
-                messages=[{"role": "user", "content": user_message}]
-            )
-            ai_reply = completion.choices[0].message["content"]
-            sleep(0.3)
-            message.reply_text(ai_reply, timeout=60)
-        except Exception as e:
-            message.reply_text(f"Failed to get a response from OpenAI: {e}")
-
-def chatbot_control_panel(update: Update, context: CallbackContext):
-    user = update.effective_user
-    chat = update.effective_chat
-    keyboard = [
-        [
-            InlineKeyboardButton("Enable", callback_data=f"add_chat({chat.id})"),
-            InlineKeyboardButton("Disable", callback_data=f"rm_chat({chat.id})"),
-        ]
-    ]
-    update.effective_message.reply_text(
-        f"Chatbot Control Panel for {html.escape(chat.title)}",
-        reply_markup=InlineKeyboardMarkup(keyboard),
-        parse_mode=ParseMode.HTML,
-    )
-
-def list_all_chats(update: Update, context: CallbackContext):
-    chats = sql.get_all_openai_chats()  # Updated to use get_all_openai_chats
-    text = "<b>OpenAI Chatbot Enabled Chats:</b>\n"
-    for chat in chats:
-        try:
-            chat_obj = context.bot.get_chat(int(chat.chat_id))
-            name = chat_obj.title or chat_obj.first_name
-            text += f"• <code>{name}</code>\n"
-        except Exception:
-            sql.disable_openai(chat.chat_id)  # Cleanup broken entries
-
-    update.effective_message.reply_text(text, parse_mode=ParseMode.HTML)
-
-__help__ = """
-*Admins only Commands*:
-• `/chatbot` - Shows chatbot control panel
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 """
 
-__mod_name__ = "OpenAI ChatBot"
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update
+from telegram.ext import CallbackContext, CallbackQueryHandler, CommandHandler, MessageHandler, Filters
+from AsunaRobot import dispatcher, openai_client, LOGGER
+from AsunaRobot.modules.sql.chatbot_sql import is_openai_enabled, enable_openai, disable_openai, get_all_openai_chats
+from AsunaRobot.modules.helper_funcs.decorators import asuna_admin
 
-CHATBOT_CONTROL_HANDLER = CommandHandler("chatbot", chatbot_control_panel, run_async=True)
-CHATBOT_ENABLE_HANDLER = CallbackQueryHandler(chatbot_enable, pattern=r"add_chat", run_async=True)
-CHATBOT_DISABLE_HANDLER = CallbackQueryHandler(chatbot_disable, pattern=r"rm_chat", run_async=True)
-CHATBOT_REPLY_HANDLER = MessageHandler(
-    Filters.text & (~Filters.regex(r"^#[^\s]+") & ~Filters.regex(r"^!")
-                    & ~Filters.regex(r"^\/")), chatbot_reply, run_async=True)
-LIST_ALL_CHATS_HANDLER = CommandHandler(
-    "allchats", list_all_chats, filters=CustomFilters.dev_filter, run_async=True)
+__mod_name__ = "ChatBot"
+__help__ = """
+Admins Only:
+• /chatbot - Open chatbot control panel
+• /addchat - Enable chatbot in the current chat
+• /rmchat - Disable chatbot in the current chat
+"""
 
+# Enable chatbot for a specific chat
+@asuna_admin
+def enable_chatbot(update: Update, context: CallbackContext):
+    chat_id = update.effective_chat.id
+    if is_openai_enabled(chat_id):
+        update.message.reply_text("ChatBot is already enabled in this chat.")
+        return
+    enable_openai(chat_id)
+    update.message.reply_text("ChatBot has been enabled in this chat!")
+
+# Disable chatbot for a specific chat
+@asuna_admin
+def disable_chatbot(update: Update, context: CallbackContext):
+    chat_id = update.effective_chat.id
+    if not is_openai_enabled(chat_id):
+        update.message.reply_text("ChatBot is already disabled in this chat.")
+        return
+    disable_openai(chat_id)
+    update.message.reply_text("ChatBot has been disabled in this chat!")
+
+# Chatbot control panel
+@asuna_admin
+def chatbot_panel(update: Update, context: CallbackContext):
+    chat_id = update.effective_chat.id
+    keyboard = [
+        [InlineKeyboardButton("Enable", callback_data=f"enable_chat({chat_id})"),
+         InlineKeyboardButton("Disable", callback_data=f"disable_chat({chat_id})")],
+    ]
+    update.message.reply_text(
+        "ChatBot Control Panel:",
+        reply_markup=InlineKeyboardMarkup(keyboard),
+    )
+
+# Handle callback queries for the control panel
+def chatbot_callback(update: Update, context: CallbackContext):
+    query = update.callback_query
+    chat_id = update.effective_chat.id
+
+    if "enable_chat" in query.data:
+        enable_openai(chat_id)
+        query.answer("ChatBot enabled!")
+        query.edit_message_text("ChatBot has been enabled in this chat.")
+    elif "disable_chat" in query.data:
+        disable_openai(chat_id)
+        query.answer("ChatBot disabled!")
+        query.edit_message_text("ChatBot has been disabled in this chat.")
+    else:
+        query.answer("Invalid action.")
+
+# Respond to user messages when ChatBot is enabled
+def chatbot_reply(update: Update, context: CallbackContext):
+    chat_id = update.effective_chat.id
+    if not is_openai_enabled(chat_id):
+        return
+
+    user_message = update.message.text
+    if not user_message:
+        return
+
+    try:
+        # Use OpenAI API to generate a response
+        response = openai_client.ChatCompletion.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": user_message}]
+        )
+        bot_reply = response.choices[0].message["content"]
+        update.message.reply_text(bot_reply)
+    except Exception as e:
+        LOGGER.error(f"Error in ChatBot reply: {e}")
+        update.message.reply_text("Failed to generate a response. Please try again later.")
+
+# List all chats with ChatBot enabled
+@asuna_admin
+def list_chats(update: Update, context: CallbackContext):
+    chats = get_all_openai_chats()
+    if not chats:
+        update.message.reply_text("No chats have ChatBot enabled.")
+        return
+
+    text = "Chats with ChatBot enabled:\n"
+    for chat in chats:
+        text += f"• {chat.chat_id}\n"
+
+    update.message.reply_text(text)
+
+# Handlers
+CHATBOT_ENABLE_HANDLER = CommandHandler("addchat", enable_chatbot, run_async=True)
+CHATBOT_DISABLE_HANDLER = CommandHandler("rmchat", disable_chatbot, run_async=True)
+CHATBOT_PANEL_HANDLER = CommandHandler("chatbot", chatbot_panel, run_async=True)
+CHATBOT_REPLY_HANDLER = MessageHandler(Filters.text & ~Filters.command, chatbot_reply, run_async=True)
+CHATBOT_CALLBACK_HANDLER = CallbackQueryHandler(chatbot_callback, pattern=r"enable_chat|disable_chat", run_async=True)
+CHATBOT_LIST_HANDLER = CommandHandler("listchats", list_chats, run_async=True)
+
+# Add handlers to dispatcher
 dispatcher.add_handler(CHATBOT_ENABLE_HANDLER)
-dispatcher.add_handler(CHATBOT_CONTROL_HANDLER)
 dispatcher.add_handler(CHATBOT_DISABLE_HANDLER)
-dispatcher.add_handler(LIST_ALL_CHATS_HANDLER)
+dispatcher.add_handler(CHATBOT_PANEL_HANDLER)
 dispatcher.add_handler(CHATBOT_REPLY_HANDLER)
-
-__handlers__ = [
-    CHATBOT_ENABLE_HANDLER,
-    CHATBOT_CONTROL_HANDLER,
-    CHATBOT_DISABLE_HANDLER,
-    LIST_ALL_CHATS_HANDLER,
-    CHATBOT_REPLY_HANDLER,
-]
+dispatcher.add_handler(CHATBOT_CALLBACK_HANDLER)
+dispatcher.add_handler(CHATBOT_LIST_HANDLER)
