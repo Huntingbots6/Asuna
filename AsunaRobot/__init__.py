@@ -226,28 +226,6 @@ apps = []
 apps.append(pbot)
 
 
-# Initialize OpenAI client
-openai_client = None
-if OPENAI_API_KEY:
-    try:
-        import openai
-
-        openai.api_key = OPENAI_API_KEY
-        openai_client = openai
-        LOGGER.info("OpenAI client initialized successfully.")
-    except ImportError:
-        LOGGER.error("Failed to import OpenAI library. Please ensure the 'openai' package is installed.")
-    except Exception as e:
-        LOGGER.error(f"An error occurred while initializing OpenAI: {e}")
-else:
-    LOGGER.warning("No OPENAI_API_KEY found! OpenAI-based chatbot features may not work.")
-
-# Optional: Log the loaded OpenAI API Key for debugging (masked for security)
-if OPENAI_API_KEY:
-    LOGGER.info(f"Using OpenAI API Key: {OPENAI_API_KEY[:5]}... (masked for security)")
-else:
-    LOGGER.warning("OPENAI_API_KEY is not set or invalid.")
-
 async def get_entity(client, entity):
     entity_client = client
     if not isinstance(entity, Chat):
