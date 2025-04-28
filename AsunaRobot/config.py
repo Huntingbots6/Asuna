@@ -57,7 +57,7 @@ class Config(object):
     SPAMWATCH_API = "4K~uuKGR_Ntet64M_cvsc4HoMvnq6sH821AfprRrGfF6aFQL2FbxRQN64CHkYY9L"  # go to support.spamwat.ch to get key
     SPAMWATCH_SUPPORT_CHAT = "@SpamWatchSupport"
     INFOPIC = "True"
-    OPENAI_API_KEY = "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"
+    OPENAI_API_KEY = "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"
     LASTFM_API_KEY = ""
     CF_API_KEY = ""
 
