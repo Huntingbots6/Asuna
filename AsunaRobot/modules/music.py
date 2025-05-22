@@ -1,203 +1,186 @@
-# Module Credits: WilliamButcherBot & DaisyX
-# Recode by @The_Ghost_Hunter On Telegram | @My_Asuna_Robot
+"""
+MIT License
+
+Copyright (c) 2025 @HuntingBots for AsunaRobot
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
 
 import os
-import aiofiles
 import aiohttp
-import asyncio
-import time
+import aiofiles
 import requests
-import wget
-from pyrogram import filters
-from pyrogram.types import Message
-from youtube_dl import YoutubeDL
-from youtubesearchpython import SearchVideos
-from tswift import Song
-import lyricsgenius
-from AsunaRobot import pbot as Asuna
-from AsunaRobot.services.dark import get_arg
-from AsunaRobot.services.setup import get_str_key
-from AsunaRobot.utils.pluginhelper import get_text, progress
+import tempfile
+from mutagen import File as MutagenFile
 
-# Genius API Token
-GENIUS = get_str_key("GENIUS_API_TOKEN", None)
+from AsunaRobot.events import register as Asuna
+from AsunaRobot import telethn as tbot
 
-# Saavn Music Handler
-@Asuna.on_message(filters.command("saavn"))
-async def saavn_music(client, message):
-    args = get_arg(message) + " song"
-    if not args.strip():
-        await message.reply("<b>Enter a song name❗</b>")
-        return
+API_URL = "https://www.jiosaavn.com/api.php"
 
-    m = await message.reply_text("Downloading your song, please wait ⏳️")
+def saavn_search(query, limit=1):
+    params = {
+        "_format": "json",
+        "__call": "search.getResults",
+        "q": query,
+        "p": 1,
+        "n": limit,
+    }
+    headers = {
+        "User-Agent": "Mozilla/5.0",
+        "Accept": "application/json"
+    }
+    resp = requests.get(API_URL, params=params, headers=headers)
+    if resp.status_code != 200:
+        return None
     try:
-        response = requests.get(f"https://jostapi.herokuapp.com/saavn?query={args}")
-        response.raise_for_status()
-        data = response.json()[0]
-        sname = data["song"]
-        slink = data["media_url"]
-        ssingers = data["singers"]
+        data = resp.json()
+    except Exception:
+        text = resp.text
+        json_start = text.find('{')
+        import json as _json
+        data = _json.loads(text[json_start:])
+    results = data.get('results', [])
+    if not results:
+        return None
+    return results[0]
 
-        file = wget.download(slink)
-        ffile = file.replace("mp4", "m4a")
-        os.rename(file, ffile)
-
-        await message.reply_audio(audio=ffile, title=sname, performer=ssingers)
-        os.remove(ffile)
-    except Exception as e:
-        await m.edit(f"Error: {e}")
-    finally:
-        await m.delete()
-
-# Deezer Music Handler
-async def fetch_deezer_data(url):
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as resp:
-            return await resp.json()
-
-async def download_deezer_song(url):
-    song_name = "asuna.mp3"
+async def download_file(url: str, file_name: str) -> str:
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as resp:
             if resp.status == 200:
-                async with aiofiles.open(song_name, mode="wb") as f:
+                f = await aiofiles.open(file_name, mode="wb")
+                await f.write(await resp.read())
+                await f.close()
+    return file_name
+
+async def download_image(url):
+    temp = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as resp:
+            if resp.status == 200:
+                async with aiofiles.open(temp.name, mode="wb") as f:
                     await f.write(await resp.read())
-    return song_name
+            else:
+                temp.close()
+                os.remove(temp.name)
+                return None
+    return temp.name
 
-@Asuna.on_message(filters.command("deezer"))
-async def deezer_music(_, message):
-    if len(message.command) < 2:
-        await message.reply_text("Provide a song name to download.")
+def set_metadata(filename, title, artist):
+    try:
+        audio = MutagenFile(filename, easy=True)
+        if audio is not None:
+            audio["title"] = title
+            audio["artist"] = artist
+            audio.save()
+    except Exception:
+        pass
+
+@Asuna(pattern=r"^/saavn(?: |$)(.*)")
+async def saavn_handler(event):
+    args = event.pattern_match.group(1)
+    if not args or args.strip() == "":
+        await event.reply("<b>Enter song name❗</b>")
+        return
+    m = await event.reply("🔍 Searching JioSaavn ...")
+    song = saavn_search(args)
+    if not song:
+        await m.edit("❌ Song not found on JioSaavn.")
+        return
+    title = song.get("title", "Unknown")
+    artist = song.get("more_info", {}).get("singers") or song.get("artist") or "Unknown"
+    image = song.get("image") or None
+
+    # Duration must be an integer or None
+    duration_str = song.get("more_info", {}).get("duration", "0")
+    try:
+        duration = int(float(duration_str))
+        if duration <= 0:
+            duration = 0
+    except Exception:
+        duration = 0
+
+    # Get highest available quality
+    media_url = None
+    for k in ["320kbps", "160kbps", "96kbps"]:
+        k_url = song.get("more_info", {}).get(f"encrypted_media_url_{k}", None)
+        if k_url:
+            media_url = k_url
+            break
+    if not media_url:
+        media_url = song.get("more_info", {}).get("preview_url") or song.get("perma_url")
+    if not media_url or not media_url.startswith("http"):
+        await m.edit("❌ No downloadable audio found for this song.")
         return
 
-    query = message.text.split(None, 1)[1].replace(" ", "%20")
-    m = await message.reply_text("Searching...")
+    file_name = f"{title}.mp3"
+    thumb_file = None
+    if image and image.startswith("http"):
+        try:
+            thumb_file = await download_image(image)
+            if not (thumb_file and os.path.exists(thumb_file)):
+                thumb_file = None
+        except Exception:
+            thumb_file = None
+
     try:
-        r = await fetch_deezer_data(f"https://thearq.tech/deezer?query={query}&count=1")
-        title, url, artist = r[0]["title"], r[0]["url"], r[0]["artist"]
-
-        await m.edit("Downloading...")
-        song = await download_deezer_song(url)
-
-        await message.reply_audio(audio=song, title=title, performer=artist)
-        os.remove(song)
+        await m.edit("⬇️ Downloading audio ...")
+        await download_file(media_url, file_name)
+        set_metadata(file_name, title, artist)
     except Exception as e:
-        await m.edit(f"Error: {e}")
-    finally:
-        await m.delete()
-
-# YouTube Video Handler
-@Asuna.on_message(filters.command(["vsong", "video"]))
-async def youtube_video(client, message: Message):
-    query = get_text(message)
-    if not query:
-        await message.reply("Provide a song or video name.")
+        if os.path.exists(file_name):
+            os.remove(file_name)
+        if thumb_file and os.path.exists(thumb_file):
+            os.remove(thumb_file)
+        await m.edit(f"❌ Download failed: {e}")
         return
 
-    m = await client.send_message(message.chat.id, f"Searching for {query} on YouTube...")
     try:
-        search = SearchVideos(query, offset=1, mode="dict", max_results=1)
-        result = search.result()["search_result"][0]
-        video_url, title, channel, video_id = result["link"], result["title"], result["channel"], result["id"]
-        thumbnail = f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg"
-
-        file_name = f"{video_id}.mp4"
-        opts = {
-            "format": "best",
-            "outtmpl": file_name,
-            "quiet": True,
-            "postprocessors": [{"key": "FFmpegVideoConvertor", "preferedformat": "mp4"}],
+        await m.edit("📤 Uploading ...")
+        from telethon.tl.types import DocumentAttributeAudio
+        send_kwargs = {
+            "file": file_name,
+            "caption": f"{title}\n{artist}",
+            "attributes": [
+                DocumentAttributeAudio(
+                    duration=duration,
+                    performer=artist,
+                    title=title,
+                )
+            ],
         }
-
-        with YoutubeDL(opts) as ytdl:
-            ytdl.download([video_url])
-
-        await client.send_video(message.chat.id, video=open(file_name, "rb"), caption=title, supports_streaming=True)
-        os.remove(file_name)
-    except Exception as e:
-        await m.edit(f"Error: {e}")
-    finally:
-        await m.delete()
-
-# YouTube Music Handler
-@Asuna.on_message(filters.command(["music", "song"]))
-async def youtube_music(client, message: Message):
-    query = get_text(message)
-    if not query:
-        await message.reply("Provide a song name.")
-        return
-
-    m = await client.send_message(message.chat.id, f"Searching for {query} on YouTube...")
-    try:
-        search = SearchVideos(query, offset=1, mode="dict", max_results=1)
-        result = search.result()["search_result"][0]
-        video_url, title, channel, video_id = result["link"], result["title"], result["channel"], result["id"]
-        thumbnail = f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg"
-
-        file_name = f"{video_id}.mp3"
-        opts = {
-            "format": "bestaudio",
-            "outtmpl": file_name,
-            "quiet": True,
-            "postprocessors": [{"key": "FFmpegExtractAudio", "preferredcodec": "mp3"}],
-        }
-
-        with YoutubeDL(opts) as ytdl:
-            ytdl.download([video_url])
-
-        await client.send_audio(
-            message.chat.id,
-            audio=open(file_name, "rb"),
-            title=title,
-            performer=channel,
-            thumb=thumbnail,
+        # Only pass thumb if it's a valid file
+        if thumb_file and os.path.exists(thumb_file):
+            send_kwargs["thumb"] = thumb_file
+        await tbot.send_file(
+            event.chat_id,
+            **send_kwargs,
+            reply_to=event.id,
         )
         os.remove(file_name)
-    except Exception as e:
-        await m.edit(f"Error: {e}")
-    finally:
+        if thumb_file and os.path.exists(thumb_file):
+            os.remove(thumb_file)
         await m.delete()
-
-# Lyrics Handlers
-@Asuna.on_message(filters.command(["lyric", "lyrics"]))
-async def lyrics_handler(client, message):
-    query = message.text.split(None, 1)[1] if len(message.text.split()) > 1 else None
-    if not query:
-        await message.reply("Provide a song name.")
-        return
-
-    m = await message.reply("Searching for lyrics...")
-    try:
-        song = Song.find_song(query)
-        if song and song.lyrics:
-            await m.edit(song.format())
-        else:
-            await m.edit("Lyrics not found.")
     except Exception as e:
-        await m.edit(f"Error: {e}")
-
-@Asuna.on_message(filters.command(["glyric", "glyrics"]))
-async def genius_lyrics(client, message):
-    if "-" not in message.text:
-        await message.reply("Use '-' to separate artist and song name. Example: /glyrics Artist - Song")
-        return
-
-    if GENIUS is None:
-        await message.reply("Genius API token is not configured.")
-        return
-
-    args = message.text.split(None, 1)[1].split("-")
-    artist, song = args[0].strip(), args[1].strip()
-
-    m = await message.reply(f"Searching lyrics for {artist} - {song}...")
-    try:
-        genius = lyricsgenius.Genius(GENIUS)
-        result = genius.search_song(song, artist)
-
-        if result:
-            await m.edit(f"Lyrics for {artist} - {song}:\n\n{result.lyrics}")
-        else:
-            await m.edit("Lyrics not found.")
-    except Exception as e:
-        await m.edit(f"Error: {e}")
+        await m.edit("❌ Upload failed: " + str(e))
+        if os.path.exists(file_name):
+            os.remove(file_name)
+        if thumb_file and os.path.exists(thumb_file):
+            os.remove(thumb_file)
